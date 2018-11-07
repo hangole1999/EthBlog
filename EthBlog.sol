@@ -11,7 +11,7 @@ contract EthBlog {
     address internal owner;
     
     // Event
-    event _CallbackShowForm(bytes32 _userName, bytes32 subject, bytes32 body);
+    event onCallbackShowForm(bytes32 _userName, bytes32 subject, bytes32 body);
     
     // Constructor
     constructor() public {
@@ -25,7 +25,7 @@ contract EthBlog {
     }
     
     // Setter
-    function setPrivateNet(address _address) public onlyOwner() {
+    function setPrivateNetwork(address _address) public onlyOwner() {
         privateNetwork = EthBlogCore(_address);
     }
     
@@ -51,7 +51,7 @@ contract EthBlog {
     }
     
     function _callbackShowForm(bytes32 _userName, bytes32 _subject, bytes32 _body) public {
-        emit _CallbackShowForm(_userName, _subject, _body);
+        emit onCallbackShowForm(_userName, _subject, _body);
     }
     
 }
@@ -61,9 +61,9 @@ contract EthBlog {
 contract EthBlogCore {
     
     // Events
-    event CreateBlog(uint userId, bytes32 nickname);
-    event WriteForm(uint userId, uint formId);
-    event CanShowFormList(uint userId, uint _showUserId, uint[] canshowIds);
+    event onCreateBlog(uint userId, bytes32 nickname);
+    event onWriteForm(uint userId, uint formId);
+    event onCanShowFormList(uint userId, uint _showUserId, uint[] canshowIds);
     
     // Structures
     struct User{
@@ -121,7 +121,7 @@ contract EthBlogCore {
             formCount: 0
         });
         
-        emit CreateBlog(userIdCount, _nickname);
+        emit onCreateBlog(userIdCount, _nickname);
         
         publicNetwork._callbackCreateBlog(userIdCount, _msgSender);
     }
@@ -141,7 +141,7 @@ contract EthBlogCore {
         
         userM[_userId].formM[userM[_userId].formCount] = formIdCount;
         
-        emit WriteForm(_userId, formIdCount);
+        emit onWriteForm(_userId, formIdCount);
     }
     
     function canShowFormList(uint _userId, uint _showUserId) public view {
@@ -155,7 +155,7 @@ contract EthBlogCore {
             }
         }
         
-        emit CanShowFormList(_userId, _showUserId, canShowIds);
+        emit onCanShowFormList(_userId, _showUserId, canShowIds);
     }
     
     // Getters
@@ -170,49 +170,60 @@ contract EthBlogCore {
     }
     
     function getFormUser(uint _userId, uint _formId) public view returns(bool, bytes32) {
-        // Form storage form = forms[_formId];
-        // bool isSame = _userId == form.userId;
-        // bytes32 nickname = users[form.userId].nickname;
+        bool isSame = _userId == formM[_formId].userId;
+        bytes32 nickname = userM[formM[_formId].userId].nickname;
         
-        // if (form.secret) {
-        //     if (isSame) {
-        //         return(true, nickname);
-        //     } else {
-        //         return(false, "");
-        //     }
-        // } else {
-        //     return(true, nickname);
-        // }
+        bool result = false;
+        
+        if (formM[_formId].secret) {
+            if (isSame) {
+                result = true;
+            } else {
+                nickname = 0x00;
+            }
+        } else {
+            result = true;
+        }
+        
+        return (result, nickname);
     }
     
     function getFormSubject(uint _userId, uint _formId) public view returns(bool, bytes32) {
-        // Form storage form = forms[_formId];
-        // bool isSame = _userId == form.userId;
+        bool isSame = _userId == formM[_formId].userId;
+        bytes32 subject = formM[_formId].subject;
         
-        // if (form.secret) {
-        //     if (isSame) {
-        //         return (true, form.subject);
-        //     } else {
-        //         return (false, "");
-        //     }
-        // } else {
-        //     return (true, form.subject);
-        // }
+        bool result = false;
+        
+        if (formM[_formId].secret) {
+            if (isSame) {
+                result = true;
+            } else {
+                subject = 0x00;
+            }
+        } else {
+            result = true;
+        }
+        
+        return (result, subject);
     }
     
     function getFormBody(uint _userId, uint _formId) public view returns(bool, bytes32) {
-        // Form storage form = forms[_formId];
-        // bool isSame = _userId == form.userId;
+        bool isSame = _userId == formM[_formId].userId;
+        bytes32 body = formM[_formId].body;
         
-        // if (form.secret) {
-        //     if (isSame) {
-        //         return (true, form.body);
-        //     } else {
-        //         return (false, "");
-        //     }
-        // } else {
-        //     return (true, form.body);
-        // }
+        bool result = false;
+        
+        if (formM[_formId].secret) {
+            if (isSame) {
+                result = true;
+            } else {
+                body = 0x00;
+            }
+        } else {
+            result = true;
+        }
+        
+        return (result, body);
     }
     
 }
